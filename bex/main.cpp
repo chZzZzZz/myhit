@@ -20,8 +20,8 @@ struct sequence {                   //定义调度序列结构类型
 int N=20;                          //工件数量
 int P[MAXN]={1,3,3,3,3,3,3,4,4,4,4,4,5,5,5,6,6,6,7,7};
 int D[MAXN]={93,93,31,93,39,62,93,93,93,93,93,93,93,93,93,40,60,93,93,93};     //加工时间pj
+int w[MAXN]={1,1,3,1,4,6,1,1,1,1,1,1,1,1,1,4,10,1,1,1};
 sequence bestseq;                   //最优的遍历路径
-
 void swap(int &a,int &b)       //交换工件顺序
   {
 	  int t;
@@ -29,7 +29,7 @@ void swap(int &a,int &b)       //交换工件顺序
   }
 
 inline int totaldist(sequence q)        //计算总时间
- {  int pe=0;//惩罚系数pe
+ {  int pe=0;//惩罚时间pe
     int cost[20]={0};//Ci，即完成时间
     int totaltime=0;
     for(int i=0 , k=0;i<20,k<20;i++,k++)
@@ -40,18 +40,31 @@ inline int totaldist(sequence q)        //计算总时间
      }
      if(cost[i-1]<=29&&cost[i]>29)//t=29时刻的检修
      {
-         cost[i]=30+cost[i]-2*cost[i-1];
+         cost[i]=30+cost[i]-cost[i-1];
+         int x=i;
+         int a=30-cost[i-1];
+         for(x=i;x<N-1;x++)
+         {
+             cost[x+1]=a;
+         }
      }
      if(cost[i-1]<=59&&cost[i]>59)//t=59时刻的检修
      {
-         cost[i]=60+cost[i]-2*cost[i-1];
+         cost[i]=60+cost[i]-cost[i-1];
+         int y=i;
+         int b=60-cost[i-1];
+         for(y=i;y<N-1;y++)
+         {
+             cost[y+1]+=b;
+         }
+
      }
-    if(cost[i]>D[q.p[k]])//对于超过交货期的加入惩罚
+    if(cost[i]>D[q.p[k]])//对于超过交货期的加入惩罚时间
            {
-               pe=cost[i]-D[q.p[k]];
+               pe=(cost[i]-D[q.p[k]])*w[k];
            }
            else{pe=0;}
-        totaltime=totaltime+cost[i]+pe;//总完成时间=sum(Ci,0,19)+pe
+        totaltime=totaltime+cost[i]+pe;//总完成时间=sum(Ci,0,19)+pe；11为临界值，此时满足全部工件都在交货期之前完成
     }
 	     return totaltime;
  }
